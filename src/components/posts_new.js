@@ -1,24 +1,44 @@
 import React, { Component } from 'react';
 import { Field, reduxForm } from 'redux-form';
+import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { createPost } from '../actions';
 
 class PostsNew extends Component {
 
-    renderField(field) {
+     renderField(field) {
+        const { meta: { touched, error } } = field;
+        const className = `form-group ${touched && error ? 'has-danger' : ''}`;
+        const inputType = field.fieldType;
+
         return (
-            <div className="form-group">
+            <div className={className}>
                 <label>{field.label}</label>
+                {inputType==="textarea" ?
+                <textarea
+                    className="form-control"
+                    rows="4"
+                    cols="50"
+                    type={field.fieldType}
+                    {...field.input}
+                /> :
                 <input 
                     className="form-control"
-                    type="text"
+                    type={field.fieldType}
                     {...field.input}
                 />
-                {field.meta.error}
+                }
+                <div className="text-help">
+                    {touched ? error : ''}
+                </div>
             </div>
         );
     }
 
     onSubmit(values) {
-        console.log(values);
+        this.props.createPost(values, () => {
+            this.props.history.push('/');
+        }); 
     }
 
     render() {
@@ -29,19 +49,23 @@ class PostsNew extends Component {
                 <Field 
                     label="Post Title"
                     name="title"
+                    fieldType="text"
                     component={this.renderField}
                 />
                 <Field 
                     label="Categories"
                     name="categories"
+                    fieldType="text"
                     component={this.renderField}
                 />
                 <Field 
                     label="Post Content"
                     name="content"
+                    fieldType="textarea"
                     component={this.renderField}
                 />
                 <button type="submit" className="btn btn-primary">Submit</button>
+                <Link to="/" className="btn btn-danger">Cancel</Link>
             </form>
         );
     }
@@ -64,4 +88,6 @@ function validate(values) {
 export default reduxForm({
     validate,
     form: 'PostsNewForm'
-})(PostsNew);
+})(
+    connect(null,{ createPost })(PostsNew)
+);
